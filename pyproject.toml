@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fed"
+version = "25.0.0"
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.18.0",
+    "fms-ehrs@git+https://github.com/bbj-lab/clif-tokenizer.git@main#egg=fms-ehrs",
+    "torch",
+    "transformers>=4.30.0,<5.0",
+    "trl"
+]
+
+[tool.black]
+target-version = [
+  "py311", "py312", "py313"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.flwr.app]
+publisher = "burkh4rt"
+
+[tool.flwr.app.components]
+serverapp = "fed.server_app:app"
+clientapp = "fed.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 3
+local-epochs = 1
+data-version = "W++"
+data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
+
+[tool.flwr.federations]
+default = "localhost-gpu"
+
+[tool.flwr.federations.localhost-gpu]
+options.num-supernodes = 3
+options.backend.client-resources.num-cpus = 1
+options.backend.client-resources.num-gpus = 1
+
+[tool.isort]
+profile = "black"
