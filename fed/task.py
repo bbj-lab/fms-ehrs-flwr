@@ -12,6 +12,7 @@ import transformers
 from datasets.utils.logging import disable_progress_bar
 from flwr.common import Context
 from fms_ehrs.framework.dataset import Datasets
+from transformers import AutoConfig, AutoModelForCausalLM
 from trl import SFTConfig, SFTTrainer
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -69,6 +70,21 @@ def test(net, testloader):
         args=training_args,
     )
     return trainer.evaluate()["eval_loss"]
+
+
+def get_net(vocab):
+    hf_config = AutoConfig.from_pretrained(
+        "meta-llama/Llama-3.2-1B",
+        vocab_size=len(vocab),
+        bos_token_id=vocab("TL_START"),
+        eos_token_id=vocab("TL_END"),
+        pad_token_id=vocab("PAD"),
+        hidden_size=512,
+        intermediate_size=1024,
+        num_hidden_layers=8,
+        num_attention_heads=8,
+    )
+    return AutoModelForCausalLM.from_config(hf_config)
 
 
 def get_weights(net):
