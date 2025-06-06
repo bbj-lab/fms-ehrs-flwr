@@ -33,16 +33,19 @@ class FlowerClient(NumPyClient):
 
 def client_fn(context: Context):
 
-    partition_id = context.node_config["partition-id"]
-    num_partitions = context.node_config["num-partitions"]
-    trainloader, valloader, vocab = load_data(partition_id, num_partitions, 1, context)
+    trainloader, valloader, vocab = load_data(
+        context.node_config["partition-id"],
+        context.node_config["num-partitions"],
+        context.run_config["local-epochs"],
+        context,
+    )
 
-    net = get_net(vocab)
-    net.to("cuda")
-
-    local_epochs = context.run_config["local-epochs"]
-
-    return FlowerClient(net, trainloader, valloader, local_epochs).to_client()
+    return FlowerClient(
+        get_net(vocab).to("cuda"),
+        trainloader,
+        valloader,
+        context.run_config["local-epochs"],
+    ).to_client()
 
 
 # Flower ClientApp

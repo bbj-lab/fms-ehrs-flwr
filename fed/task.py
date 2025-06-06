@@ -22,6 +22,7 @@ transformers.logging.set_verbosity_error()
 
 
 training_args = SFTConfig(
+    report_to="wandb",
     output_dir="/gpfs/data/bbj-lab/users/burkh4rt/test-fed",
     per_device_eval_batch_size=4,
     gradient_accumulation_steps=2,
@@ -33,7 +34,7 @@ training_args = SFTConfig(
     greater_is_better=False,
     save_strategy="best",
     ddp_find_unused_parameters=False,
-    max_steps=1_000,
+    max_steps=(289_677 * 10) // 4 // 3,
 )
 
 

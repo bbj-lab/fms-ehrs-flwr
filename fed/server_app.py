@@ -22,17 +22,12 @@ def server_fn(context: Context):
         data_dir=pathlib.Path(context.run_config["data-dir"]).expanduser().resolve(),
     )
 
-    # Read from config
-    num_rounds = context.run_config["num-server-rounds"]
-
-    net = get_net(dataset.vocab)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net.to(device)
-
+    net = get_net(dataset.vocab).to(
+        torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    )
     weights = get_weights(net)
     initial_parameters = ndarrays_to_parameters(weights)
 
-    # Define strategy
     strategy = SaveFedAvg(
         fraction_fit=1.0,
         fraction_evaluate=1.0,
@@ -40,10 +35,9 @@ def server_fn(context: Context):
         net=net,
         context=context,
     )
-    config = ServerConfig(num_rounds=num_rounds)
+    config = ServerConfig(num_rounds=context.run_config["num-server-rounds"])
 
     return ServerAppComponents(strategy=strategy, config=config)
 
 
-# Create ServerApp
 app = ServerApp(server_fn=server_fn)

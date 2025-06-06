@@ -49,9 +49,9 @@ sbatch slurm.sh
 
 Format:
 ```
-isort src/
-black src/
-shfmt -w *.sh
+isort .
+black .
+shfmt -w .
 prettier --write --print-width 81 --prose-wrap always *.md
 ```
 

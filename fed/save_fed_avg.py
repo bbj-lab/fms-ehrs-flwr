@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-create a
+create a version of FedAvg that saves the model each round
 """
 
 import pathlib
