@@ -20,10 +20,13 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 disable_progress_bar()
 transformers.logging.set_verbosity_error()
 
+# total_training_tokens = 176_217_345
 
 training_args = SFTConfig(
     report_to="wandb",
     output_dir="/gpfs/data/bbj-lab/users/burkh4rt/test-fed",
+    max_seq_length=1024,
+    per_device_train_batch_size=8,
     per_device_eval_batch_size=4,
     gradient_accumulation_steps=2,
     learning_rate=2e-4,
@@ -32,9 +35,10 @@ training_args = SFTConfig(
     metric_for_best_model="eval_loss",
     load_best_model_at_end=True,
     greater_is_better=False,
+    eval_strategy="epoch",
     save_strategy="best",
     ddp_find_unused_parameters=False,
-    max_steps=(289_677 * 10) // 4 // 3,
+    lr_scheduler_type="constant",
 )
 
 

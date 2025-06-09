@@ -33,19 +33,19 @@ serverapp = "fed.server_app:app"
 clientapp = "fed.client_app:app"
 
 [tool.flwr.app.config]
-num-server-rounds = 7
-local-epochs = 10
+num-server-rounds = 10
+local-epochs = 5
 data-version = "W++"
 data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
 model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-mdls"
-setup-version = "e10wb"
+setup-version = "5e_8b_10r"
 
 [tool.flwr.federations]
 default = "localhost-gpu"
 
 [tool.flwr.federations.localhost-gpu]
 options.num-supernodes = 3
-options.backend.client-resources.num-cpus = 2
+options.backend.client-resources.num-cpus = 1
 options.backend.client-resources.num-gpus = 1
 
 [tool.isort]

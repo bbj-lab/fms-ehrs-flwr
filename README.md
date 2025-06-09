@@ -1,4 +1,7 @@
-# fms-flwr
+# fms-ehrs-flwr
+
+Federates learning of FMs for EHRs using
+[fms-ehrs](https://github.com/bbj-lab/clif-tokenizer) as a dependency.
 
 ## Send to randi:
 

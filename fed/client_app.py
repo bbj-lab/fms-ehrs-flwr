@@ -48,5 +48,4 @@ def client_fn(context: Context):
     ).to_client()
 
 
-# Flower ClientApp
 app = ClientApp(client_fn)
