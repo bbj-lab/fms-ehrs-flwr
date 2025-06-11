@@ -33,12 +33,16 @@ serverapp = "fed.server_app:app"
 clientapp = "fed.client_app:app"
 
 [tool.flwr.app.config]
+per-device-train-batch-size = 4
 num-server-rounds = 10
-local-epochs = 5
+local-epochs = 1
 data-version = "W++"
 data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
 model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-mdls"
-setup-version = "5e_8b_10r"
+setup-version = "1e_4b_10r"
+total-training-tokens = 176_217_345
+max-seq-length = 1024
+gradient-accumulation-steps = 2
 
 [tool.flwr.federations]
 default = "localhost-gpu"

@@ -4,8 +4,8 @@
 utilities
 """
 
+import collections
 import warnings
-from collections import OrderedDict
 
 import torch
 import transformers
@@ -20,26 +20,39 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 disable_progress_bar()
 transformers.logging.set_verbosity_error()
 
-# total_training_tokens = 176_217_345
 
-training_args = SFTConfig(
-    report_to="wandb",
-    output_dir="/gpfs/data/bbj-lab/users/burkh4rt/test-fed",
-    max_seq_length=1024,
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=4,
-    gradient_accumulation_steps=2,
-    learning_rate=2e-4,
-    num_train_epochs=1,
-    save_total_limit=2,
-    metric_for_best_model="eval_loss",
-    load_best_model_at_end=True,
-    greater_is_better=False,
-    eval_strategy="epoch",
-    save_strategy="best",
-    ddp_find_unused_parameters=False,
-    lr_scheduler_type="constant",
-)
+def get_training_args(context: Context, **kwargs):
+
+    max_steps = (
+        (
+            context.run_config["total-training-tokens"]
+            * context.run_config["local-epochs"]
+        )
+        // context.run_config["max-seq-length"]
+        // context.run_config["per-device-train-batch-size"]
+        // context.run_config["gradient-accumulation-steps"]
+    )
+
+    return SFTConfig(
+        report_to="wandb",
+        output_dir="/gpfs/data/bbj-lab/users/burkh4rt/test-fed",
+        max_seq_length=context.run_config["max-seq-length"],
+        per_device_train_batch_size=context.run_config["per-device-train-batch-size"],
+        per_device_eval_batch_size=4,
+        gradient_accumulation_steps=context.run_config["gradient-accumulation-steps"],
+        learning_rate=2e-4,
+        lr_scheduler_type="linear",
+        num_train_epochs=1,
+        save_total_limit=2,
+        metric_for_best_model="eval_loss",
+        load_best_model_at_end=True,
+        greater_is_better=False,
+        eval_strategy="steps",
+        save_strategy="best",
+        ddp_find_unused_parameters=False,
+        max_steps=max_steps,
+        **kwargs,
+    )
 
 
 def load_data(partition_id: int, num_partitions: int, n_epochs: int, context: Context):
@@ -56,23 +69,23 @@ def load_data(partition_id: int, num_partitions: int, n_epochs: int, context: Co
     )
 
 
-def train(net, trainloader, testloader):
+def train(net, trainloader, testloader, context):
     net.to("cuda")
     trainer = SFTTrainer(
         model=net,
         train_dataset=trainloader,
         eval_dataset=testloader,
-        args=training_args,
+        args=get_training_args(context),
     )
     trainer.train()
 
 
-def test(net, testloader):
+def test(net, testloader, context):
     net.to("cuda")
     trainer = SFTTrainer(
         model=net,
         eval_dataset=testloader,
-        args=training_args,
+        args=get_training_args(context),
     )
     return trainer.evaluate()["eval_loss"]
 
@@ -98,5 +111,5 @@ def get_weights(net):
 
 def set_weights(net, parameters):
     params_dict = zip(net.state_dict().keys(), parameters)
-    state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+    state_dict = collections.OrderedDict({k: torch.tensor(v) for k, v in params_dict})
     net.load_state_dict(state_dict, strict=True)
