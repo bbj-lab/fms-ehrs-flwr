@@ -24,12 +24,12 @@ class FlowerClient(NumPyClient):
     def fit(self, parameters, config):
         set_weights(self.net, parameters)
         train(self.net, self.trainloader, self.testloader, self.context)
-        return get_weights(self.net), 1, {}
+        return get_weights(self.net), len(self.trainloader), {}
 
     def evaluate(self, parameters, config):
         set_weights(self.net, parameters)
         loss = test(self.net, self.testloader, self.context)
-        return float(loss), 1, {}
+        return float(loss), len(self.testloader), {}
 
 
 def client_fn(context: Context):

@@ -23,16 +23,6 @@ transformers.logging.set_verbosity_error()
 
 def get_training_args(context: Context, **kwargs):
 
-    max_steps = (
-        (
-            context.run_config["total-training-tokens"]
-            * context.run_config["local-epochs"]
-        )
-        // context.run_config["max-seq-length"]
-        // context.run_config["per-device-train-batch-size"]
-        // context.run_config["gradient-accumulation-steps"]
-    )
-
     return SFTConfig(
         report_to="wandb",
         output_dir="/gpfs/data/bbj-lab/users/burkh4rt/test-fed",
@@ -40,8 +30,7 @@ def get_training_args(context: Context, **kwargs):
         per_device_train_batch_size=context.run_config["per-device-train-batch-size"],
         per_device_eval_batch_size=4,
         gradient_accumulation_steps=context.run_config["gradient-accumulation-steps"],
-        learning_rate=2e-4,
-        lr_scheduler_type="linear",
+        learning_rate=context.run_config["lr"],
         num_train_epochs=1,
         save_total_limit=2,
         metric_for_best_model="eval_loss",
@@ -50,7 +39,6 @@ def get_training_args(context: Context, **kwargs):
         eval_strategy="steps",
         save_strategy="best",
         ddp_find_unused_parameters=False,
-        max_steps=max_steps,
         **kwargs,
     )
 
@@ -63,8 +51,8 @@ def load_data(partition_id: int, num_partitions: int, n_epochs: int, context: Co
         n_parts=num_partitions,
     )
     return (
-        dataset.get_train_dataset(n_epochs=n_epochs),
-        dataset.get_val_dataset(),
+        dataset.get_train_dataset(n_epochs=n_epochs, iterable=False),
+        dataset.get_val_dataset(iterable=False),
         dataset.vocab,
     )
 

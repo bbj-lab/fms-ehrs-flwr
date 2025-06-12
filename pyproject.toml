@@ -39,10 +39,10 @@ local-epochs = 1
 data-version = "W++"
 data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
 model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-mdls"
-setup-version = "1e_4b_10r"
-total-training-tokens = 176_217_345
-max-seq-length = 1024
+setup-version = "1e_4b_10r_0002lr"
 gradient-accumulation-steps = 2
+lr = 2e-4
+max-seq-length = 1024
 
 [tool.flwr.federations]
 default = "localhost-gpu"
