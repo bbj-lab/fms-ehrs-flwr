@@ -35,11 +35,11 @@ clientapp = "fed.client_app:app"
 [tool.flwr.app.config]
 per-device-train-batch-size = 4
 num-server-rounds = 10
-local-epochs = 1
+local-epochs = 3
 data-version = "W++"
 data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
 model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-mdls"
-setup-version = "1e_4b_10r_0002lr"
+setup-version = "3e_4b_10r_0002lr"
 gradient-accumulation-steps = 2
 lr = 2e-4
 max-seq-length = 1024

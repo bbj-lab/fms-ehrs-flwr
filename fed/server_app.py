@@ -10,12 +10,17 @@ import torch
 from flwr.common import Context, ndarrays_to_parameters
 from flwr.server import ServerApp, ServerAppComponents, ServerConfig
 from fms_ehrs.framework.dataset import Datasets
+from fms_ehrs.framework.logger import get_logger
 
 from .save_fed_avg import SaveFedAvg
 from .task import get_net, get_weights
 
 
 def server_fn(context: Context):
+
+    logger = get_logger()
+    logger.log_env()
+    logger.info(f"{context.run_config=}")
 
     dataset = Datasets(
         data_version=context.run_config["data-version"],
