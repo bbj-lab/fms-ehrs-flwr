@@ -7,7 +7,7 @@ name = "fed"
 version = "25.0.0"
 dependencies = [
     "flwr[simulation]>=1.18.0",
-    "fms-ehrs@git+https://github.com/bbj-lab/clif-tokenizer.git@main#egg=fms-ehrs",
+    "fms-ehrs@git+https://github.com/bbj-lab/fms-ehrs.git@124e205#egg=fms-ehrs",
     "torch",
     "transformers>=4.30.0,<5.0",
     "trl",
@@ -36,8 +36,8 @@ clientapp = "fed.client_app:app"
 num-server-rounds = 7
 local-epochs = 10
 data-version = "W++"
-data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
-model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-mdls"
+data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/data-mimic"
+model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/mdls"
 setup-version = "e10wb"
 
 [tool.flwr.federations]
