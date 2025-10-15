@@ -13,7 +13,6 @@ from .task import set_weights
 
 
 class SaveFedAvg(fl.server.strategy.FedAvg):
-
     def __init__(
         self,
         *args,
@@ -25,13 +24,7 @@ class SaveFedAvg(fl.server.strategy.FedAvg):
         self.net = net
         self.context = context
 
-    def aggregate_fit(
-        self,
-        server_round: int,
-        results,
-        failures,
-    ):
-
+    def aggregate_fit(self, server_round: int, results, failures):
         aggregated_parameters, aggregated_metrics = super().aggregate_fit(
             server_round, results, failures
         )

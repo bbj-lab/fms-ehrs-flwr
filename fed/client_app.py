@@ -17,23 +17,26 @@ class FlowerClient(NumPyClient):
         self.trainloader = trainloader
         self.testloader = testloader
         self.local_epochs = local_epochs
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.net.to(self.device)
+        pid = context.node_id % torch.cuda.device_count()
+        torch.cuda.set_device(pid)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.context = context
+        torch.manual_seed(42 + pid)
 
     def fit(self, parameters, config):
         set_weights(self.net, parameters)
+        self.net.to(self.device)
         train(self.net, self.trainloader, self.testloader, self.context)
         return get_weights(self.net), len(self.trainloader), {}
 
     def evaluate(self, parameters, config):
         set_weights(self.net, parameters)
+        self.net.to(self.device)
         loss = test(self.net, self.testloader, self.context)
         return float(loss), len(self.testloader), {}
 
 
 def client_fn(context: Context):
-
     trainloader, valloader, vocab = load_data(
         context.node_config["partition-id"],
         context.node_config["num-partitions"],
@@ -42,7 +45,7 @@ def client_fn(context: Context):
     )
 
     return FlowerClient(
-        get_net(vocab).to("cuda"),
+        get_net(vocab),
         trainloader,
         valloader,
         context.run_config["local-epochs"],

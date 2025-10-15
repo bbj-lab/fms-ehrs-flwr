@@ -1,61 +1,65 @@
 # fms-ehrs-flwr
 
-Federates learning of FMs for EHRs using
-[fms-ehrs](https://github.com/bbj-lab/clif-tokenizer) as a dependency.
+This [flower](https://flower.ai) app performs federated training of a FM on
+tokenized EHR data.
 
-## Send to randi:
-
-```bash
-rsync -avht \
-  --delete \
-  --exclude ".venv/" \
-  --exclude ".idea/" \
-  --exclude "logs/" \
-  ~/Documents/chicago/fms-flwr \
-  randi:/gpfs/data/bbj-lab/users/burkh4rt
-```
-
-## Install dependencies
+## Install
 
 ```bash
-cd /gpfs/data/bbj-lab/users/burkh4rt/fms-flwr
-mkdir logs
-python3 -m venv .venv
-source .venv/bin/activate
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-pip install -e .
+git clone https://github.com/bbj-lab/fms-ehrs-flwr
+cd cd fms-ehrs-flwr
+mkdir -p logs
+# pip install uv
+uv venv --python=$(which python3) venv
+source venv/bin/activate
+uv pip install --torch-backend=cu128 --link-mode=copy -e .
 ```
 
-## Interactive run:
+## Interactive run
+
+You can develop code on a single gpu and use the `gpudev` partition which
+generally has good availability. (This is not efficient, so I would use this
+primarily for troubleshooting/debugging.)
 
 ```bash
 systemd-run --scope --user tmux new -s gpuq
-srun -p gpuq \
+srun -p gpudev \
   --gres=gpu:1 \
   --cpus-per-task=3 \
   --time=1:00:00 \
   --job-name=adhoc \
   --pty bash -i
 
-source .venv/bin/activate
+source venv/bin/activate
 now() { TZ=America/Chicago date +%Y-%m-%dT%H%M%S%z ; }
 flwr run . | tee logs/run-$(now).log
 ```
 
-## Slurm:
+## Slurm
+
+There's a second configuration that runs 3 gpu's on the `gpuq` partition:
 
 ```bash
-sbatch slurm.sh
+jid=$(sbatch --parsable slurm.sh)
 ```
+
+## Monitoring
+
+-   Running [nvtop](https://github.com/Syllo/nvtop) on the node running the job
+    (`srun --jobid=$jid --pty nvtop`) should give you something like this:
+
+    ![](img/nvtop.png)
+
+-   Other statistics and real-time output is available on
+    [weights and biases](wandb.ai).
 
 <!--
 
 Format:
 ```
-isort .
-black .
+ruff format .
 shfmt -w .
-prettier --write --print-width 81 --prose-wrap always *.md
+prettier --write *.md
 ```
 
 -->

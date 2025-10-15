@@ -15,20 +15,18 @@ from fms_ehrs.framework.dataset import Datasets
 from transformers import AutoConfig, AutoModelForCausalLM
 from trl import SFTConfig, SFTTrainer
 
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore")
 disable_progress_bar()
 transformers.logging.set_verbosity_error()
 
 
 def get_training_args(context: Context, **kwargs):
-
     return SFTConfig(
         report_to="wandb",
         output_dir="/gpfs/data/bbj-lab/users/burkh4rt/test-fed",
         max_seq_length=context.run_config["max-seq-length"],
         per_device_train_batch_size=context.run_config["per-device-train-batch-size"],
-        per_device_eval_batch_size=4,
+        per_device_eval_batch_size=context.run_config["per-device-eval-batch-size"],
         gradient_accumulation_steps=context.run_config["gradient-accumulation-steps"],
         learning_rate=context.run_config["lr"],
         num_train_epochs=1,
@@ -58,7 +56,19 @@ def load_data(partition_id: int, num_partitions: int, n_epochs: int, context: Co
 
 
 def train(net, trainloader, testloader, context):
-    net.to("cuda")
+    import torch, os
+
+    print(
+        f"[ClientAppActor] node_id={context.node_id} "
+        f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')} "
+        f"torch.cuda.device_count()={torch.cuda.device_count()}"
+    )
+
+    if torch.cuda.is_available():
+        print(f"Current device before set: {torch.cuda.current_device()}")
+        torch.cuda.set_device(context.node_id % torch.cuda.device_count())
+        print(f"Assigned GPU {torch.cuda.current_device()}")
+
     trainer = SFTTrainer(
         model=net,
         train_dataset=trainloader,
@@ -69,11 +79,8 @@ def train(net, trainloader, testloader, context):
 
 
 def test(net, testloader, context):
-    net.to("cuda")
     trainer = SFTTrainer(
-        model=net,
-        eval_dataset=testloader,
-        args=get_training_args(context),
+        model=net, eval_dataset=testloader, args=get_training_args(context)
     )
     return trainer.evaluate()["eval_loss"]
 
@@ -85,8 +92,8 @@ def get_net(vocab):
         bos_token_id=vocab("TL_START"),
         eos_token_id=vocab("TL_END"),
         pad_token_id=vocab("PAD"),
-        hidden_size=512,
-        intermediate_size=1024,
+        hidden_size=1024,
+        intermediate_size=2048,
         num_hidden_layers=8,
         num_attention_heads=8,
     )
