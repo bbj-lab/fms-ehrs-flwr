@@ -30,7 +30,7 @@ def get_training_args(context: Context, **kwargs):
         gradient_accumulation_steps=context.run_config["gradient-accumulation-steps"],
         learning_rate=context.run_config["lr"],
         num_train_epochs=1,
-        save_total_limit=2,
+        save_total_limit=1,
         metric_for_best_model="eval_loss",
         load_best_model_at_end=True,
         greater_is_better=False,
@@ -56,18 +56,6 @@ def load_data(partition_id: int, num_partitions: int, n_epochs: int, context: Co
 
 
 def train(net, trainloader, testloader, context):
-    import torch, os
-
-    print(
-        f"[ClientAppActor] node_id={context.node_id} "
-        f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')} "
-        f"torch.cuda.device_count()={torch.cuda.device_count()}"
-    )
-
-    if torch.cuda.is_available():
-        print(f"Current device before set: {torch.cuda.current_device()}")
-        torch.cuda.set_device(context.node_id % torch.cuda.device_count())
-        print(f"Assigned GPU {torch.cuda.current_device()}")
 
     trainer = SFTTrainer(
         model=net,

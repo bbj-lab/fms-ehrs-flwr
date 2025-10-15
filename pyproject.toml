@@ -35,10 +35,10 @@
         lr                          = 2e-4
         max-seq-length              = 1024
         model-dir                   = "/gpfs/data/bbj-lab/users/burkh4rt/mdls"
-        num-server-rounds           = 3
+        num-server-rounds           = 10
         per-device-eval-batch-size  = 4
-        per-device-train-batch-size = 4
-        setup-version               = "1e_4b_3r_0002lr"
+        per-device-train-batch-size = 16
+        setup-version               = "1e_16b_10r_0002lr"
 
 [tool.flwr.federations]
     default = "standard-gpuq"
