@@ -1,0 +1,24 @@
+{
+    "black-formatter.args": ["--config", "${workspaceFolder}/pyproject.toml"],
+    "editor.formatOnSave": true,
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "prettier.configPath": ".prettierrc.toml",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "[shellscript]": {
+        "editor.defaultFormatter": "mkhl.shfmt"
+    },
+    "shellformat.useEditorConfig": true,
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
+    }
+}

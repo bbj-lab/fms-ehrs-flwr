@@ -1,56 +1,73 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
-name = "fed"
-version = "25.0.0"
-dependencies = [
-    "flwr[simulation]>=1.18.0",
-    "fms-ehrs@git+https://github.com/bbj-lab/clif-tokenizer.git@main#egg=fms-ehrs",
-    "torch",
-    "transformers>=4.30.0,<5.0",
-    "trl",
-    "wandb>=0.20"
-]
+    dependencies = [
+        "flwr[simulation]>=1.18.0",
+        "fms-ehrs@git+https://github.com/bbj-lab/fms-ehrs.git@v2.0.0#egg=fms-ehrs",
+        "torch",
+        "transformers>=4.30.0,<5.0",
+        "trl",
+        "wandb>=0.20",
+    ]
+    name = "fed"
+    version = "25.0.0"
 
-[tool.black]
-target-version = [
-    "py311", "py312", "py313"
-]
+[build-system]
+    build-backend = "hatchling.build"
+    requires      = [ "hatchling" ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["."]
+    packages = [ "." ]
 
 [tool.hatch.metadata]
-allow-direct-references = true
+    allow-direct-references = true
 
 [tool.flwr.app]
-publisher = "burkh4rt"
+    publisher = "burkh4rt"
 
-[tool.flwr.app.components]
-serverapp = "fed.server_app:app"
-clientapp = "fed.client_app:app"
+    [tool.flwr.app.components]
+        clientapp = "fed.client_app:app"
+        serverapp = "fed.server_app:app"
 
-[tool.flwr.app.config]
-per-device-train-batch-size = 4
-num-server-rounds = 10
-local-epochs = 1
-data-version = "W++"
-data-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-data"
-model-dir = "/gpfs/data/bbj-lab/users/burkh4rt/clif-mdls"
-setup-version = "1e_4b_10r"
-total-training-tokens = 176_217_345
-max-seq-length = 1024
-gradient-accumulation-steps = 2
+    [tool.flwr.app.config]
+        data-dir                    = "/gpfs/data/bbj-lab/users/burkh4rt/data-mimic"
+        data-version                = "W++"
+        gradient-accumulation-steps = 2
+        local-epochs                = 1
+        lr                          = 2e-4
+        max-seq-length              = 1024
+        model-dir                   = "/gpfs/data/bbj-lab/users/burkh4rt/mdls"
+        num-server-rounds           = 3
+        per-device-eval-batch-size  = 4
+        per-device-train-batch-size = 4
+        setup-version               = "1e_4b_3r_0002lr"
 
 [tool.flwr.federations]
-default = "localhost-gpu"
+    default = "standard-gpuq"
 
-[tool.flwr.federations.localhost-gpu]
-options.num-supernodes = 3
-options.backend.client-resources.num-cpus = 1
-options.backend.client-resources.num-gpus = 1
+    [tool.flwr.federations.minimal-gpudev]
+        options.backend.client-resources.num-cpus = 1
+        options.backend.client-resources.num-gpus = 1
+        options.num-supernodes                    = 3
 
-[tool.isort]
-profile = "black"
+    [tool.flwr.federations.standard-gpuq]
+        options.backend.client-resources.num-cpus = 2
+        options.backend.client-resources.num-gpus = 1
+        options.num-supernodes                    = 3
+
+[tool.ruff]
+    line-length = 88
+
+    [tool.ruff.format]
+        docstring-code-format     = true
+        indent-style              = "space"
+        line-ending               = "lf"
+        quote-style               = "double"
+        skip-magic-trailing-comma = true
+
+    [tool.ruff.lint]
+        ignore = [ "E731" ]
+
+        [tool.ruff.lint.isort]
+            known-first-party = [ "fms_ehrs" ]
+
+[tool.uv]
+    no-cache = true

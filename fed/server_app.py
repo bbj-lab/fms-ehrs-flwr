@@ -6,25 +6,26 @@ things the server does
 
 import pathlib
 
-import torch
 from flwr.common import Context, ndarrays_to_parameters
 from flwr.server import ServerApp, ServerAppComponents, ServerConfig
 from fms_ehrs.framework.dataset import Datasets
+from fms_ehrs.framework.logger import get_logger
 
 from .save_fed_avg import SaveFedAvg
 from .task import get_net, get_weights
 
 
 def server_fn(context: Context):
+    logger = get_logger()
+    logger.log_env()
+    logger.info(f"{context.run_config=}")
 
     dataset = Datasets(
         data_version=context.run_config["data-version"],
         data_dir=pathlib.Path(context.run_config["data-dir"]).expanduser().resolve(),
     )
 
-    net = get_net(dataset.vocab).to(
-        torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    )
+    net = get_net(dataset.vocab)
     weights = get_weights(net)
     initial_parameters = ndarrays_to_parameters(weights)
 
