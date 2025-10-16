@@ -56,7 +56,6 @@ def load_data(partition_id: int, num_partitions: int, n_epochs: int, context: Co
 
 
 def train(net, trainloader, testloader, context):
-
     trainer = SFTTrainer(
         model=net,
         train_dataset=trainloader,

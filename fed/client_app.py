@@ -17,11 +17,9 @@ class FlowerClient(NumPyClient):
         self.trainloader = trainloader
         self.testloader = testloader
         self.local_epochs = local_epochs
-        pid = context.node_id % torch.cuda.device_count()
-        torch.cuda.set_device(pid)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.context = context
-        torch.manual_seed(42 + pid)
+        torch.manual_seed(42)
 
     def fit(self, parameters, config):
         set_weights(self.net, parameters)

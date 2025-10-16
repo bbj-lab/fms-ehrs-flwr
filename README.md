@@ -7,7 +7,7 @@ tokenized EHR data.
 
 ```bash
 git clone https://github.com/bbj-lab/fms-ehrs-flwr
-cd cd fms-ehrs-flwr
+cd fms-ehrs-flwr
 mkdir -p logs
 # pip install uv
 uv venv --python=$(which python3) venv
@@ -37,11 +37,68 @@ flwr run . | tee logs/run-$(now).log
 
 ## Slurm
 
-There's a second configuration that runs 3 gpu's on the `gpuq` partition:
+There's a second configuration that runs 3 gpu's on the `gpuq` partition.
 
 ```bash
 jid=$(sbatch --parsable slurm.sh)
 ```
+
+## Configuration
+
+The [pyproject.toml](./pyproject.toml) file provides some configurable options
+for our app:
+
+```sh
+[tool.flwr.app.config]
+    data-dir                    = "/gpfs/data/bbj-lab/users/burkh4rt/data-mimic" # where the data lives
+    data-version                = "W++" # the version of the data we're using
+    gradient-accumulation-steps = 2 # waiting to aggregate gradients is a multiplier on the effective batch size
+    local-epochs                = 1 # how long to let individual workers run before aggregating
+    lr                          = 2e-4 # learning rate
+    max-seq-length              = 1024
+    model-dir                   = "/gpfs/data/bbj-lab/users/burkh4rt/mdls" # where to store trained models
+    num-server-rounds           = 10 # number of epochs to run
+    per-device-eval-batch-size  = 4
+    per-device-train-batch-size = 4
+    setup-version               = "1e_4b_10r_0002lr"
+```
+
+## Outputs
+
+Logs from the runs are placed into the `logs` directory. Each one should record
+all configuration settings used for the run,
+
+```
+[2025-10-15T16:44:13-0500] context.run_config={
+    'data-dir': '/gpfs/data/bbj-lab/users/burkh4rt/data-mimic',
+    'data-version': 'W++',
+    'gradient-accumulation-steps': 2,
+    'local-epochs': 1,
+    'lr': 0.0002,
+    'max-seq-length': 1024,
+    'model-dir': '/gpfs/data/bbj-lab/users/burkh4rt/mdls',
+    'num-server-rounds': 3,
+    'per-device-eval-batch-size': 4,
+    'per-device-train-batch-size': 4,
+    'setup-version': '1e_4b_3r_0002lr'
+    }
+```
+
+and a summary of performance on the evaluation set after each round:
+
+```
+[SUMMARY]
+Run finished 3 round(s) in 9800.81s
+History (loss, distributed):
+    round 1: 0.931810670185353
+    round 2: 0.8875063137023168
+    round 3: 0.881442553112436
+```
+
+We've slightly modified flwr's implementation of
+[FedAvg](https://arxiv.org/abs/1602.05629) to save a copy of the aggregated model
+after each training round. Currently, these are saved to the `model-dir` entry in
+our configuration.
 
 ## Monitoring
 
@@ -51,7 +108,9 @@ jid=$(sbatch --parsable slurm.sh)
     ![](img/nvtop.png)
 
 -   Other statistics and real-time output is available on
-    [weights and biases](wandb.ai).
+    [weights and biases](wandb.ai) and should look something like this:
+
+    ![](img/wandb.png)
 
 <!--
 
